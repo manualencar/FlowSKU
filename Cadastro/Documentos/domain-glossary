@@ -1,0 +1,132 @@
+# Domain Glossary
+
+## 1. SKU
+Identidade empresarial permanente de um produto dentro do sistema.
+
+- Pode existir sem estoque.
+- Pode existir antes da compra (ex: ideia, teste, dropship).
+- Centraliza ficha técnica, performance e histórico.
+- Não deve ser recriado para o mesmo produto.
+
+---
+
+## 2. SKU Type
+Classificação estratégica do SKU.
+
+Exemplos:
+- physical (produto comprado)
+- dropship (vendido sem estoque próprio)
+- test (produto em validação)
+- repurchase (produto já validado)
+- virtual (produto ainda conceitual)
+
+---
+
+## 3. Supplier (Fornecedor)
+Origem comercial do produto.
+
+Pode fornecer:
+- nota fiscal
+- catálogo
+- fotos
+- informações técnicas
+
+---
+
+## 4. Brand (Marca)
+Marca associada ao produto.
+Pode ser diferente do fornecedor.
+
+---
+
+## 5. PipelineItem
+Instância de processo de produção de anúncio vinculada a um SKU.
+
+Representa a jornada de:
+- coleta de informações
+- estruturação
+- construção de ficha técnica
+- copy
+- imagens
+- validação
+
+Um SKU pode ter múltiplos PipelineItems.
+
+---
+
+## 6. Pipeline Stage
+Etapa atual do PipelineItem.
+
+Exemplos:
+- raw_input
+- research
+- structuring
+- copywriting
+- validation
+- ready
+- published
+
+---
+
+## 7. Research Data
+Dados brutos coletados para construção do SKU.
+
+Pode incluir:
+- PDFs
+- imagens
+- notas fiscais
+- textos soltos
+- links
+
+---
+
+## 8. Technical Sheet (Ficha Técnica)
+Conjunto estruturado de atributos essenciais do produto.
+
+Deve ser:
+- consistente
+- versionável
+- validável
+
+Campos críticos devem acompanhar o SKU em todas as etapas.
+
+---
+
+## 9. Listing
+Anúncio publicado em marketplace.
+
+- Vinculado a um SKU.
+- Pode haver múltiplos Listings por SKU.
+- Pode ter variações de preço e copy.
+
+---
+
+## 10. Inventory Batch
+Lote físico comprado de um SKU.
+
+Permite rastrear:
+- custo
+- quantidade
+- data de entrada
+
+---
+
+## 11. Cost Structure
+Estrutura de custos associada ao SKU.
+
+Inclui:
+- custo produto
+- custo embalagem
+- custo envio
+- taxas marketplace
+
+---
+
+## 12. Performance Metrics
+Indicadores de desempenho do SKU.
+
+Exemplos:
+- vendas
+- margem
+- ROI
+- conversão
