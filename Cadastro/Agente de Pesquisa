@@ -1,0 +1,116 @@
+#domínio
+Sistema de gestão e produção de anúncios para revendedores.
+
+# Objetivo do Agente de Pesquisa
+Transformar informação desestruturada em SKU comercializável.
+
+##Agregador de cadastro
+Função: 
+Receber qualquer tipo de insumo
+
+Nome do produto
+Marca
+SKU
+Links
+Texto bruto
+PDF
+Imagem
+Extrair o máximo de informação técnica possível
+
+##Segmentação
+Função:
+Analisar o conteúdo bruto (PDF, nota, catálogo, texto)
+
+Prompt exemplo:
+
+Analise o conteúdo abaixo.
+Identifique quantos produtos diferentes existem.
+Separe cada produto individualmente.
+Não misture informações.
+Retorne uma lista estruturada com:
+
+Identificar:
+
+Quantos produtos existem
+Onde começa e termina cada um
+Quais dados pertencem a cada SKU
+Retornar uma lista estruturada
+
+Saída exemplo:
+
+[
+ { produto_1 },
+ { produto_2 },
+ { produto_3 }
+]
+
+[
+  {
+    sku_identificado: "",
+    nome_produto: "",
+    trecho_relevante: ""
+  },
+  {
+    sku_identificado: "",
+    nome_produto: "",
+    trecho_relevante: ""
+  }
+]
+
+##Busca Web
+
+Se:
+
+Marca identificada
+Modelo identificado
+
+busca web com:
+"Ficha técnica oficial {marca} {modelo}"
+
+
+##Consolidação Inteligente
+
+Função: 
+Normalização de dados
+
+Prompt exemplo:
+
+Consolide as informações abaixo sobre o produto.
+Remova duplicações.
+Priorize especificações técnicas.
+Ignore avaliações.
+Organize de forma factual.
+Não invente informações.
+Se algo não puder ser confirmado, marque como “não confirmado”.
+
+
+Consolidar tudo
+Retornar estruturado
+
+{
+  nome_produto: "",
+  marca: "",
+  modelo: "",
+  sku: "",
+  links: [],
+  texto_bruto: "",
+  arquivos_pdf: [],
+  imagens: []
+  resumo_tecnico: "",
+  especificacoes: [],
+  dimensoes: "",
+  material: "",
+  voltagem: "",
+  compatibilidade: "",
+  fabricante_identificado: "",
+  nivel_confianca: ""
+}
+
+##
+/agent/research
+/agent/normalize
+/agent/tech-sheet
+/agent/classify
+
+
+
