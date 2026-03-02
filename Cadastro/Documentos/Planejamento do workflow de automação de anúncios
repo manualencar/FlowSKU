@@ -1,0 +1,372 @@
+# Planejamento do workflow de automação de anúncios (e-commerce/marketplace)
+
+## Contexto e objetivo
+
+Este documento registra o primeiro prompt utilizado para desenhar um workflow de automação voltado à publicação e otimização de anúncios para e-commerce/marketplaces. O fluxo parte do cadastro de um novo produto e gera variações de imagem, descrição e título, estruturando um experimento A/B e definindo um vencedor automaticamente.
+
+## Primeiro prompt utilizado
+
+Quero criar um workflow de automação para e‑commerce/marketplace com o seguinte comportamento:
+
+Gatilho:
+
+Sempre que um novo produto é cadastrado no estoque (ou em uma planilha/base com campos: ID, nome, descrição bruta, categoria, preço, link de ficha técnica, imagens originais), o workflow deve iniciar.
+
+Etapa 1 – Preparar contexto do produto:
+
+Padronizar os dados recebidos (nome, categoria, marca, atributos importantes, benefícios).
+
+Identificar para qual canal o anúncio será usado (Mercado Livre, Shopee, loja própria etc.).
+
+Etapa 2 – Agente de imagem:
+
+Usar um modelo de geração/edição de imagem para criar 3 variações de imagens de anúncio:
+
+Versão “padrão catálogo” (clean, fundo neutro).
+
+Versão “benefício em destaque” (texto curto sobre benefício principal).
+
+Versão “social proof” (selo tipo “mais vendido” / “favorito dos clientes”).
+
+Otimizar tamanho e proporção das imagens conforme boas práticas de e‑commerce (ex: quadrado 1:1 e retangular 4:5).
+
+Salvar URLs/paths dessas imagens para uso no anúncio.
+
+Etapa 3 – Agente de texto (descrição):
+
+A partir dos dados do produto, gerar 2 versões de descrição otimizadas para SEO e CRO, em PT‑BR, com:
+
+Parágrafo inicial focado no benefício principal.
+
+Lista de benefícios em bullets.
+
+Especificações técnicas organizadas.
+
+FAQ curta (3–5 perguntas) baseada no tipo de produto.
+
+Versão A: mais direta, curta.
+
+Versão B: mais detalhada, com storytelling leve.
+
+Etapa 4 – Agente de título:
+
+Gerar 4 variações de título otimizadas para cada canal, usando boas práticas de SEO (palavra‑chave principal no início, atributos importantes, modelo, quantidade, etc.).
+
+Marcar cada variação com um rótulo para testes A/B: Titulo_A1, Titulo_A2, Titulo_B1, Titulo_B2.
+
+Etapa 5 – Configuração de testes A/B de SEO e CRO:
+
+Criar um registro de teste A/B para esse produto contendo:
+
+Versão A: Título_A1 + Descrição_A + Imagem_1.
+
+Versão B: Título_B1 + Descrição_B + Imagem_2.
+
+Registrar parâmetros que serão monitorados: impressões, CTR, taxa de conversão, vendas, ticket médio.
+
+(Opcional) Enviar esses dados para outro serviço/integração (Zapier, n8n, planilha, banco) para rodar o teste por X dias ou até Y visitas.
+
+Etapa 6 – Decisão automática:
+
+Após período de teste definido (ex: 14 dias ou 500 visitas), comparar A vs B.
+
+Marcar automaticamente o “vencedor” com base em taxa de conversão e vendas.
+
+Atualizar o produto para usar a combinação vencedora (título, descrição, imagem) como padrão.
+
+Requisitos gerais:
+
+Estruture esse workflow usando os recursos de Lovable AI e automações, permitindo que eu conecte integrações externas (ex: Zapier/n8n) se necessário.​
+
+Deixe claro no código/fluxo onde entram os modelos de texto e de imagem para que eu possa ajustar depois.
+
+## Especificação do fluxo
+
+### Entradas (produto)
+
+Campos mínimos esperados na origem (estoque/planilha/base):
+
+- id
+- name
+- raw_description
+- category
+- price
+- spec_sheet_url
+- original_images (lista de urls/paths)
+
+Campos opcionais recomendados:
+
+- brand
+- sku
+- ean_gtin
+- dimensions
+- weight
+- materials
+- color
+- warranty
+- channel_targets (ex: ["mercadolivre","shopee","loja_propria"])
+
+### Saídas (artefatos gerados)
+
+- product_context (objeto normalizado)
+- images:
+  - image_catalog_1_1_url
+  - image_benefit_1_1_url
+  - image_socialproof_1_1_url
+  - image_catalog_4_5_url
+  - image_benefit_4_5_url
+  - image_socialproof_4_5_url
+- descriptions:
+  - description_A (curta)
+  - description_B (detalhada)
+- titles:
+  - title_A1
+  - title_A2
+  - title_B1
+  - title_B2
+- ab_test_record:
+  - variant_A: title_A1 + description_A + image_catalog_1_1
+  - variant_B: title_B1 + description_B + image_benefit_1_1
+  - metrics_to_monitor: impressions, ctr, conversion_rate, sales, avg_ticket
+  - evaluation_rule: após 14 dias ou 500 visitas
+  - winner: A|B|inconclusive
+
+### Regras de decisão (default)
+
+Critério primário:
+- maior taxa de conversão (conversion_rate)
+
+Critério secundário (desempate):
+- maior número de vendas (sales)
+
+Fallback:
+- se diferença < limiar (ex: 3%) ou volume insuficiente, marcar como inconclusivo
+
+## Ponto de ajuste dos modelos
+
+### Modelos de texto
+
+- TEXT_MODEL_PROVIDER: OpenAI | Anthropic | etc
+- TEXT_MODEL_NAME: exemplo "gpt-4.1-mini" (ajustável)
+- PROMPT_TEMPLATE_DESCRIPTION_A
+- PROMPT_TEMPLATE_DESCRIPTION_B
+- PROMPT_TEMPLATE_TITLES
+
+### Modelos de imagem
+
+- IMAGE_MODEL_PROVIDER: OpenAI image | Stability | etc
+- IMAGE_MODEL_NAME: ajustável
+- PROMPT_TEMPLATE_IMAGE_CATALOG
+- PROMPT_TEMPLATE_IMAGE_BENEFIT
+- PROMPT_TEMPLATE_IMAGE_SOCIAL_PROOF
+- Renderização/resize: serviço interno ou step separado (ex: Cloudinary)
+
+## Código/fluxo gerado (esqueleto)
+
+Abaixo está um esqueleto de workflow em estilo n8n. Ele é intencionalmente modular para que as integrações (planilha, ERP, marketplace, storage de imagem, tracking de métricas) possam ser trocadas sem reescrever o fluxo inteiro.
+
+### Variáveis (env)
+
+- SOURCE_TYPE: "sheets" | "database" | "webhook"
+- STORAGE_TYPE: "s3" | "gcs" | "cloudinary"
+- TEXT_MODEL_PROVIDER, TEXT_MODEL_NAME
+- IMAGE_MODEL_PROVIDER, IMAGE_MODEL_NAME
+- AB_TEST_DAYS: 14
+- AB_TEST_MIN_VISITS: 500
+- AB_TEST_MIN_DIFF: 0.03
+
+### Nós do workflow (mapa)
+
+1. Trigger (New Product)
+2. Normalize Product Data
+3. Determine Channel Targets
+4. Image Agent (3 variações + 2 formatos)
+5. Text Agent (Descrição A/B)
+6. Title Agent (A1/A2/B1/B2)
+7. Create A/B Test Record
+8. Publish Variants / Sync Integrations (opcional)
+9. Wait / Monitor Window
+10. Fetch Metrics
+11. Decide Winner
+12. Update Listing With Winner
+13. Persist Output + Audit Log
+
+### Exemplo de “workflow json” (pseudo-n8n)
+
+Observação: este json é um molde conceitual para documentar o fluxo. Para execução real, substituir os nós “HTTP Request / Function” por integrações reais e credenciais.
+
+```json
+{
+  "name": "product-listing-ab-automation",
+  "nodes": [
+    {
+      "name": "Trigger_New_Product",
+      "type": "trigger",
+      "config": {
+        "source": "{{SOURCE_TYPE}}",
+        "fields": ["id","name","raw_description","category","price","spec_sheet_url","original_images"]
+      }
+    },
+    {
+      "name": "Normalize_Product_Data",
+      "type": "function",
+      "config": {
+        "code": "return normalizeProduct($input);"
+      }
+    },
+    {
+      "name": "Determine_Channel_Targets",
+      "type": "function",
+      "config": {
+        "code": "return determineChannels($json);"
+      }
+    },
+    {
+      "name": "Image_Agent_Generate_Variations",
+      "type": "http_request",
+      "config": {
+        "provider": "{{IMAGE_MODEL_PROVIDER}}",
+        "model": "{{IMAGE_MODEL_NAME}}",
+        "inputs": {
+          "product_context": "={{$json.product_context}}",
+          "original_images": "={{$json.original_images}}"
+        },
+        "templates": {
+          "catalog": "={{PROMPT_TEMPLATE_IMAGE_CATALOG}}",
+          "benefit": "={{PROMPT_TEMPLATE_IMAGE_BENEFIT}}",
+          "social_proof": "={{PROMPT_TEMPLATE_IMAGE_SOCIAL_PROOF}}"
+        },
+        "outputs": ["image_catalog","image_benefit","image_socialproof"]
+      }
+    },
+    {
+      "name": "Image_Resize_Formats",
+      "type": "function",
+      "config": {
+        "code": "return resizeToFormats($json, ['1:1','4:5']);"
+      }
+    },
+    {
+      "name": "Upload_Images_Storage",
+      "type": "http_request",
+      "config": {
+        "provider": "{{STORAGE_TYPE}}",
+        "inputs": "={{$json.images_local}}",
+        "outputs": "image_urls"
+      }
+    },
+    {
+      "name": "Text_Agent_Descriptions",
+      "type": "http_request",
+      "config": {
+        "provider": "{{TEXT_MODEL_PROVIDER}}",
+        "model": "{{TEXT_MODEL_NAME}}",
+        "inputs": {
+          "product_context": "={{$json.product_context}}",
+          "spec_sheet_url": "={{$json.spec_sheet_url}}"
+        },
+        "templates": {
+          "description_A": "={{PROMPT_TEMPLATE_DESCRIPTION_A}}",
+          "description_B": "={{PROMPT_TEMPLATE_DESCRIPTION_B}}"
+        },
+        "outputs": ["description_A","description_B"]
+      }
+    },
+    {
+      "name": "Text_Agent_Titles",
+      "type": "http_request",
+      "config": {
+        "provider": "{{TEXT_MODEL_PROVIDER}}",
+        "model": "{{TEXT_MODEL_NAME}}",
+        "inputs": {
+          "product_context": "={{$json.product_context}}",
+          "channels": "={{$json.channel_targets}}"
+        },
+        "template": "={{PROMPT_TEMPLATE_TITLES}}",
+        "outputs": ["title_A1","title_A2","title_B1","title_B2"]
+      }
+    },
+    {
+      "name": "Create_AB_Test_Record",
+      "type": "function",
+      "config": {
+        "code": "return createABRecord($json, { days: {{AB_TEST_DAYS}}, minVisits: {{AB_TEST_MIN_VISITS}} });"
+      }
+    },
+    {
+      "name": "Publish_Variants_Optional",
+      "type": "router",
+      "config": {
+        "routes": [
+          { "if": "containsChannel('mercadolivre')", "to": "Sync_Mercado_Livre" },
+          { "if": "containsChannel('shopee')", "to": "Sync_Shopee" },
+          { "if": "containsChannel('loja_propria')", "to": "Sync_Store" }
+        ]
+      }
+    },
+    {
+      "name": "Wait_Test_Window",
+      "type": "wait",
+      "config": {
+        "mode": "until",
+        "rule": "afterDaysOrMinVisits",
+        "days": "{{AB_TEST_DAYS}}",
+        "min_visits": "{{AB_TEST_MIN_VISITS}}"
+      }
+    },
+    {
+      "name": "Fetch_Metrics",
+      "type": "http_request",
+      "config": {
+        "provider": "analytics",
+        "inputs": {
+          "product_id": "={{$json.id}}",
+          "ab_test_id": "={{$json.ab_test_record.id}}"
+        },
+        "outputs": ["metrics_A","metrics_B"]
+      }
+    },
+    {
+      "name": "Decide_Winner",
+      "type": "function",
+      "config": {
+        "code": "return decideWinner($json.metrics_A, $json.metrics_B, { minDiff: {{AB_TEST_MIN_DIFF}} });"
+      }
+    },
+    {
+      "name": "Update_Product_Winner",
+      "type": "http_request",
+      "config": {
+        "provider": "listing",
+        "inputs": {
+          "product_id": "={{$json.id}}",
+          "winner_payload": "={{$json.winner_payload}}"
+        }
+      }
+    },
+    {
+      "name": "Persist_Audit_Log",
+      "type": "database",
+      "config": {
+        "table": "product_listing_automation_logs",
+        "data": "={{$json}}"
+      }
+    }
+  ],
+  "connections": [
+    ["Trigger_New_Product","Normalize_Product_Data"],
+    ["Normalize_Product_Data","Determine_Channel_Targets"],
+    ["Determine_Channel_Targets","Image_Agent_Generate_Variations"],
+    ["Image_Agent_Generate_Variations","Image_Resize_Formats"],
+    ["Image_Resize_Formats","Upload_Images_Storage"],
+    ["Upload_Images_Storage","Text_Agent_Descriptions"],
+    ["Text_Agent_Descriptions","Text_Agent_Titles"],
+    ["Text_Agent_Titles","Create_AB_Test_Record"],
+    ["Create_AB_Test_Record","Publish_Variants_Optional"],
+    ["Publish_Variants_Optional","Wait_Test_Window"],
+    ["Wait_Test_Window","Fetch_Metrics"],
+    ["Fetch_Metrics","Decide_Winner"],
+    ["Decide_Winner","Update_Product_Winner"],
+    ["Update_Product_Winner","Persist_Audit_Log"]
+  ]
+}
